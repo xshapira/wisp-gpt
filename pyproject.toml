@@ -288,6 +288,7 @@ ignore = [
     "E501",  # line too long
     "C901",  # Comprehension is too complex (11 > 10)
     "W191", # indentation contains tabs
+    "E402"
 ]
 unfixable = ["F841"]
 extend-include = ["*.ipynb"]
