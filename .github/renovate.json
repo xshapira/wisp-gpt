@@ -1,0 +1,3 @@
+{
+  "extends": ["github>xshapira/renovate-config"]
+}
