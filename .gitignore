@@ -2,6 +2,7 @@
 
 .streamlit
 .cache/
+out
 
 # specific for this project
 .vscode
