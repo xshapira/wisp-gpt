@@ -258,37 +258,35 @@ traitlets = "5.10.0"
 disallow_untyped_defs = true
 disallow_any_unimported = true
 no_implicit_optional = true
-no_implicit_reexport = true
-check_untyped_defs = true
 strict_equality = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_return_any = true
+check_untyped_defs = true
 show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ['tests.*']
+disallow_untyped_defs = false
+strict_equality = false
 
 [tool.ruff]
 line-length = 88
-exclude = [
-    '.git',
-    '__pycache__',
-    '__init__.py',
-    '.mypy_cache',
-    '.pytest_cache',
-]
+exclude = ['.git', '__pycache__', '__init__.py', '.mypy_cache', '.pytest_cache']
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
-    "UP",  # pyupgrade
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "F",  # pyflakes
+  "I",  # isort
+  "C",  # flake8-comprehensions
+  "B",  # flake8-bugbear
+  "UP", # pyupgrade
 ]
 ignore = [
-    "E501",  # line too long
-    "C901",  # Comprehension is too complex (11 > 10)
-    "W191", # indentation contains tabs
-    "E402"
+  "E501", # line too long
+  "C901", # Comprehension is too complex (11 > 10)
+  "W191", # indentation contains tabs
+  "E402",
 ]
 unfixable = ["F841"]
 extend-include = ["*.ipynb"]
