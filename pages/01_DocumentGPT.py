@@ -3,7 +3,7 @@ from typing import IO
 import streamlit as st
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
-from langchain.schema.vectorstore import VectorStore
+from langchain.schema.vectorstore import VectorStoreRetriever
 from langchain.storage import LocalFileStore
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
@@ -27,7 +27,7 @@ st.markdown(
 )
 
 
-def embed_file(file: IO[bytes]) -> VectorStore:
+def embed_file(file: IO[bytes]) -> VectorStoreRetriever:
     file_content = file.read()
     file_path = f"./.cache/files/{file.name}"
 
@@ -45,7 +45,8 @@ def embed_file(file: IO[bytes]) -> VectorStore:
     embeddings = OpenAIEmbeddings()
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
     vectorstore = FAISS.from_documents(docs, cached_embeddings)
-    return vectorstore.as_retriever()
+    print(type(vectorstore.as_retriever()))
+    return vectorstore.as_retriever()  # type: ignore[no-any-return]
 
 
 if file := st.file_uploader(
