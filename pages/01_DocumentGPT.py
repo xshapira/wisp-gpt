@@ -95,7 +95,7 @@ def send_message(message, role, save=True):
         save_message(message, role)
 
 
-def paint_history():
+def display_chat_history():
     for message in st.session_state["messages"]:
         send_message(message["message"], message["role"], save=False)
 
@@ -123,7 +123,7 @@ if file:
     retriever = embed_file(file)
 
     send_message("I'm ready! Ask away!", "ai", save=False)
-    paint_history()
+    display_chat_history()
     message = st.chat_input("Ask me any question about your file")
 
     if message:
