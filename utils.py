@@ -89,7 +89,6 @@ class Embedder:
 
 
 def manage_chat_session(file, prompt, llm, history_file_path, **kwargs):
-    # chat_model = ChatModel()
     retriever = Embedder.embed_file(file, **kwargs)
     send_message("I'm ready! Ask away!", "ai", save=False)
     restore_history_from_memory()
