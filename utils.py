@@ -9,7 +9,6 @@ from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain.prompts import (
-    ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
@@ -38,20 +37,12 @@ class ChatModel:
     def __init__(
         self,
         llm=None,
-        system_message=None,
-        human_message=None,
+        prompt=None,
         memory_llm=None,
         **kwargs,
     ):
         self.llm = llm
-        self.prompt = ChatPromptTemplate.from_messages(
-            [
-                SystemMessagePromptTemplate.from_template(
-                    "You are a helpful assistant."
-                ),
-                HumanMessagePromptTemplate.from_template("{question}"),
-            ]
-        )
+        self.prompt = prompt
 
     def configure_chat_memory(self, memory_llm, **kwargs):
         self.memory_llm = memory_llm
@@ -66,28 +57,17 @@ class ChatModel:
 
 
 class Embedder:
-    # def __init__(
-    #     self,
-    #     file_path=None,
-    #     cache_dir=None,
-    #     embeddings=None,
-    #     *args,
-    # ):
-    #     self.file_path = file_path
-    #     self.cache_dir = cache_dir
-    #     self.embeddings = embeddings
-
     @classmethod
     @st.cache_data(show_spinner="Embedding file...")
     def embed_file(
         cls,
         file,
-        file_path,
+        _file_path,
         _cache_dir,
         _embeddings=None,
     ):
         file_content = file.read()
-        file_path = f"./.cache/{file_path}/{file.name}"
+        file_path = f"./.cache/{_file_path}/{file.name}"
 
         with open(file_path, "wb") as fp:
             fp.write(file_content)
@@ -108,10 +88,9 @@ class Embedder:
         return vectorstore.as_retriever()  # type: ignore[no-any-return]
 
 
-def manage_chat_session(file, llm, history_file_path, *args):
-    chat_model = ChatModel()
-    embedder = Embedder()
-    retriever = embedder.embed_file(file, *args)
+def manage_chat_session(file, prompt, llm, history_file_path, **kwargs):
+    # chat_model = ChatModel()
+    retriever = Embedder.embed_file(file, **kwargs)
     send_message("I'm ready! Ask away!", "ai", save=False)
     restore_history_from_memory()
     display_chat_history()
@@ -130,7 +109,7 @@ def manage_chat_session(file, llm, history_file_path, *args):
                 )
                 | itemgetter("chat_history")
             )
-            | chat_model.prompt
+            | prompt
             | llm
         )
         with st.chat_message("ai"):
@@ -151,6 +130,11 @@ def load_human_message(path):
     with open(path) as fp:
         human_template = yaml.safe_load(fp)
     return HumanMessagePromptTemplate.from_template(human_template)
+
+
+def load_txt(path):
+    with open(path) as fp:
+        return fp.read()
 
 
 def load_markdown(path):
@@ -218,6 +202,7 @@ def intro(
     title,
     markdown,
     history_file_path,
+    prompt,
     llm,
     chat_session_args,
 ):
@@ -240,7 +225,13 @@ def intro(
             load_history_from_file(history_file_path)
 
     if file:
-        manage_chat_session(file, llm, history_file_path, *chat_session_args)
+        manage_chat_session(
+            file,
+            prompt,
+            llm,
+            history_file_path,
+            **chat_session_args,
+        )
     else:
         st.session_state["messages"] = []
         st.session_state["chat_history"] = []
