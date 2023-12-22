@@ -14,6 +14,50 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 
 
+class ChatSessionManager:
+    def __init__(self):
+        self.messages = []
+        self.chat_history = []
+
+    def save_message(self, message, role):
+        self.messages.append({"message": message, "role": role})
+
+    def send_message(self, message, role, save=True):
+        with st.chat_message(role):
+            st.markdown(message)
+        if save:
+            self.save_message(message, role)
+
+    def display_chat_history(self):
+        for message in self.messages:
+            self.send_message(message["message"], message["role"], save=False)
+
+    def save_history(_self, input, output):
+        _self.chat_history.append(
+            {"input": input, "output": output},
+        )
+
+    def save_history_to_file(self, history_file_path):
+        history = st.session_state["memory"].chat_memory.messages
+        history = messages_to_dict(history)
+
+        with open(history_file_path, "w") as fp:
+            json.dump(history, fp, indent=2)
+
+    def restore_history_from_memory(self):
+        for history in self.chat_history:
+            st.session_state["memory"].save_context(
+                {"input": history["input"]},
+                {"output": history["output"]},
+            )
+
+    @st.cache_data(show_spinner="Loading history from file...")
+    def load_history_from_file(_self, history_file_path):
+        loaded_message = load_json(history_file_path)
+        history = messages_from_dict(loaded_message)
+        st.session_state["memory"].chat_memory.messages = history
+
+
 class ChatCallbackHandler(BaseCallbackHandler):
     message = ""
 
@@ -21,7 +65,8 @@ class ChatCallbackHandler(BaseCallbackHandler):
         self.message_box = st.empty()
 
     def on_llm_end(self, *args, **kwargs):
-        save_message(self.message, "ai")
+        chat_session_manager = ChatSessionManager()
+        chat_session_manager.save_message(self.message, "ai")
 
     def on_llm_new_token(self, token, *args, **kwargs):
         self.message += token
@@ -83,35 +128,50 @@ class Embedder:
         return vectorstore.as_retriever()  # type: ignore[no-any-return]
 
 
-def manage_chat_session(file, prompt, llm, history_file_path, **kwargs):
-    retriever = Embedder.embed_file(file, **kwargs)
-    send_message("I'm ready! Ask away.", "ai", save=False)
-    restore_history_from_memory()
-    display_chat_history()
+class ChatSession:
+    def __init__(self):
+        self.chat_session_manager = ChatSessionManager()
 
-    message = st.chat_input("Ask me any question about your file")
-    if message:
-        send_message(message, "human")
-        chain = (
-            {
-                "context": retriever | RunnableLambda(format_docs),
-                "question": RunnablePassthrough(),
-            }
-            | RunnablePassthrough.assign(
-                chat_history=RunnableLambda(
-                    st.session_state["memory"].load_memory_variables
-                )
-                | itemgetter("chat_history")
-            )
-            | prompt
-            | llm
+    def start(
+        self,
+        file,
+        prompt,
+        llm,
+        history_file_path,
+        **kwargs,
+    ):
+        retriever = Embedder.embed_file(file, **kwargs)
+        self.chat_session_manager.send_message(
+            "I'm ready! Ask away.",
+            "ai",
+            save=False,
         )
-        with st.chat_message("ai"):
-            result = chain.invoke(message)
-            save_history(message, result.content)
+        self.chat_session_manager.restore_history_from_memory()
+        self.chat_session_manager.display_chat_history()
 
-        if len(st.session_state["memory"].chat_memory.messages) != 0:
-            save_history_to_file(history_file_path)
+        message = st.chat_input("Ask me any question about your file")
+        if message:
+            self.chat_session_manager.send_message(message, "human")
+            chain = (
+                {
+                    "context": retriever | RunnableLambda(format_docs),
+                    "question": RunnablePassthrough(),
+                }
+                | RunnablePassthrough.assign(
+                    chat_history=RunnableLambda(
+                        st.session_state["memory"].load_memory_variables
+                    )
+                    | itemgetter("chat_history")
+                )
+                | prompt
+                | llm
+            )
+            with st.chat_message("ai"):
+                result = chain.invoke(message)
+                self.chat_session_manager.save_history(message, result.content)
+
+            if len(st.session_state["memory"].chat_memory.messages) != 0:
+                self.chat_session_manager.save_history_to_file(history_file_path)
 
 
 def load_txt(path):
@@ -133,51 +193,6 @@ def format_docs(docs):
     return "/n/n".join(document.page_content for document in docs)
 
 
-def save_message(message, role):
-    st.session_state["messages"].append({"message": message, "role": role})
-
-
-def send_message(message, role, save=True):
-    with st.chat_message(role):
-        st.markdown(message)
-    if save:
-        save_message(message, role)
-
-
-def display_chat_history():
-    for message in st.session_state["messages"]:
-        send_message(message["message"], message["role"], save=False)
-
-
-def save_history(input, output):
-    st.session_state["chat_history"].append(
-        {"input": input, "output": output},
-    )
-
-
-def save_history_to_file(history_file_path):
-    history = st.session_state["memory"].chat_memory.messages
-    history = messages_to_dict(history)
-
-    with open(history_file_path, "w") as fp:
-        json.dump(history, fp, indent=2)
-
-
-def restore_history_from_memory():
-    for history in st.session_state["chat_history"]:
-        st.session_state["memory"].save_context(
-            {"input": history["input"]},
-            {"output": history["output"]},
-        )
-
-
-@st.cache_data(show_spinner="Loading history from file...")
-def load_history_from_file(history_file_path):
-    loaded_message = load_json(history_file_path)
-    history = messages_from_dict(loaded_message)
-    st.session_state["memory"].chat_memory.messages = history
-
-
 def intro(
     page_title,
     page_icon,
@@ -194,8 +209,9 @@ def intro(
     )
 
     st.title(title)
-
     st.markdown(markdown)
+
+    chat_session_manager = ChatSessionManager()
 
     with st.sidebar:
         file = st.file_uploader(
@@ -204,10 +220,11 @@ def intro(
         )
         history_file_path = Path(history_file_path)
         if history_file_path.exists():
-            load_history_from_file(history_file_path)
+            chat_session_manager.load_history_from_file(history_file_path)
 
     if file:
-        manage_chat_session(
+        chat_session = ChatSession()
+        chat_session.start(
             file,
             prompt,
             llm,
@@ -215,8 +232,8 @@ def intro(
             **chat_session_args,
         )
     else:
-        st.session_state["messages"] = []
-        st.session_state["chat_history"] = []
+        chat_session_manager.messages = []
+        chat_session_manager.chat_history = []
 
 
 if __name__ == "__main__":
