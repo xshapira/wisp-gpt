@@ -3,15 +3,10 @@ from operator import itemgetter
 from pathlib import Path
 
 import streamlit as st
-import yaml
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.memory import ConversationSummaryBufferMemory
-from langchain.prompts import (
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
 from langchain.schema import messages_from_dict, messages_to_dict
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.storage import LocalFileStore
@@ -117,18 +112,6 @@ def manage_chat_session(file, prompt, llm, history_file_path, **kwargs):
 
         if len(st.session_state["memory"].chat_memory.messages) != 0:
             save_history_to_file(history_file_path)
-
-
-def load_system_message(path):
-    with open(path) as fp:
-        system_template = yaml.safe_load(fp)
-    return SystemMessagePromptTemplate.from_template(system_template)
-
-
-def load_human_message(path):
-    with open(path) as fp:
-        human_template = yaml.safe_load(fp)
-    return HumanMessagePromptTemplate.from_template(human_template)
 
 
 def load_txt(path):
