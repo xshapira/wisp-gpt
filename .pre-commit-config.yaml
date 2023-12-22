@@ -6,13 +6,13 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: check-added-large-files
-        args: ["--maxkb=10240"]
+        args: ['--maxkb=10240']
       - id: debug-statements
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.1.7
+    rev: v0.1.9
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix, --fixable=F841]
