@@ -16,6 +16,20 @@ def intro(
     llm,
     chat_session_args,
 ):
+    """
+    Sets up the page configuration, displays a title and markdown content. It allows file uploading, and interactions with the chat.
+
+    Args:
+        page_title: The title of the web page
+        page_icon: The icon that will be displayed in the browser tab for the page. It should be a URL or a file path to an image file (e.g., a .png or .ico file) that represents the icon.
+        title: The title of the page or application
+        markdown: A string that contains the Markdown content to be displayed on the page.
+        history_file_path: The file path where the chat history will be saved.
+        prompt: The initial message or question that will be displayed in the chat interface.
+        llm: The language model to be used for the chat session.
+        chat_session_args: A dictionary that contains additional arguments for the `manage_chat_session` function. These arguments are passed to the function when it is called.
+    """
+
     st.set_page_config(
         page_title=page_title,
         page_icon=page_icon,
