@@ -208,10 +208,10 @@ def intro(
 
     if file:
         manage_chat_session(
-            file,
-            prompt,
-            llm,
-            history_file_path,
+            file=file,
+            prompt=prompt,
+            llm=llm,
+            history_file_path=history_file_path,
             **chat_session_args,
         )
     else:
