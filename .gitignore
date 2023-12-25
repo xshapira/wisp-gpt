@@ -9,8 +9,8 @@ out
 .sourcery.yaml
 codiga.yml
 .python-version
-notebook_preferred
-langchain_practice
+notebook_preferred.ipynb
+langchain_practice.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
