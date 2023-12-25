@@ -1,1 +1,3 @@
-## WispGPT - Clever as a wisp, powerful as GPT - your personal AI sidekick
+## WispGPT - Your personal AI sidekick
+
+Clever as a wisp, powerful as GPT.
