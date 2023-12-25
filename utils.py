@@ -217,7 +217,3 @@ def intro(
     else:
         st.session_state["messages"] = []
         st.session_state["chat_history"] = []
-
-
-if __name__ == "__main__":
-    intro()
