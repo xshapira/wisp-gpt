@@ -17,7 +17,7 @@ def intro(
     chat_session_args,
 ):
     """
-    Sets up the page configuration, displays a title and markdown content. It allows file uploading, and interactions with the chat.
+    Sets up the page configuration, displays a title and markdown content. It allows file uploading, and interaction with the chat.
 
     Args:
         page_title: The title of the web page
