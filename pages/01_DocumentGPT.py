@@ -32,7 +32,6 @@ def configure_chat_model():
 
 
 def run_chat_session(chat_model):
-    chat_model.configure_chat_memory(chat_model.memory_llm)
     intro_config = {
         "page_title": "DocumentGPT",
         "page_icon": "📄",
@@ -53,6 +52,7 @@ def run_chat_session(chat_model):
 
 def main() -> None:
     chat_model = configure_chat_model()
+    chat_model.configure_chat_memory(chat_model.memory_llm)
     run_chat_session(chat_model)
 
 
