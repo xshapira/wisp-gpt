@@ -3,14 +3,14 @@ from operator import itemgetter
 import streamlit as st
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 
-from utils import (
-    Embedder,
+from src.chat_session_manager import (
     display_chat_history,
     restore_history_from_memory,
     save_history,
     save_history_to_file,
     send_message,
 )
+from src.embedder import Embedder
 
 
 def format_docs(docs):

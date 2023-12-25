@@ -6,7 +6,9 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
 )
 
-from utils import ChatCallbackHandler, ChatModel, intro, load_markdown, load_txt
+from src.chat_model import ChatCallbackHandler, ChatModel
+from src.manage import intro
+from src.utils import load_markdown, load_txt
 
 
 def configure_chat_model():

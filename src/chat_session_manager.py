@@ -3,7 +3,7 @@ import json
 import streamlit as st
 from langchain.schema import messages_from_dict, messages_to_dict
 
-from utils import load_json
+from src.utils import load_json
 
 
 def save_message(self, message, role):
