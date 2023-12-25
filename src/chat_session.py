@@ -24,7 +24,7 @@ def format_docs(docs):
     Returns:
         str: A string containing the page content of each document in the input list.
     """
-    return "/n/n".join(document.page_content for document in docs)
+    return "\n\n".join(document.page_content for document in docs)
 
 
 def manage_chat_session(file, prompt, llm, history_file_path, **kwargs):
