@@ -56,4 +56,4 @@ def load_file(path):
         with open(path) as fp:
             return fp.read()
     except ValueError as exc:
-        raise ValueError("Failed to load file") from exc
+        raise ValueError(f"Failed to load file: {exc}") from exc
