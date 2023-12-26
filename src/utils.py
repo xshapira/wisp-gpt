@@ -1,7 +1,10 @@
 import json
+from pathlib import Path
+from typing import overload
 
 
-def load_txt(path):
+@overload
+def load_file(path: str) -> str:
     """
     Loads a text file and returns its contents as a string.
 
@@ -15,7 +18,8 @@ def load_txt(path):
         return fp.read()
 
 
-def load_markdown(path):
+@overload
+def load_file(path: str) -> str:
     """
     Loads a Markdown file and returns its contents as a string.
 
@@ -29,7 +33,8 @@ def load_markdown(path):
         return fp.read()
 
 
-def load_json(path):
+@overload
+def load_file(path: Path) -> dict:
     """
     Loads a JSON file and returns its contents as a dictionary.
 
@@ -41,3 +46,14 @@ def load_json(path):
     """
     with open(path) as fp:
         return json.load(fp)
+
+
+def load_file(path):
+    """
+    Default implementation of the `load_file` function.
+    """
+    try:
+        with open(path) as fp:
+            return fp.read()
+    except ValueError as exc:
+        raise ValueError("Failed to load file") from exc

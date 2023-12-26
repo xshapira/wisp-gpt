@@ -3,7 +3,7 @@ import json
 import streamlit as st
 from langchain.schema import messages_from_dict, messages_to_dict
 
-from src.utils import load_json
+from src.utils import load_file
 
 
 def save_message(message, role):
@@ -85,6 +85,6 @@ def load_history_from_file(history_file_path):
     Args:
         history_file_path: A string that represents the file path of the history file that you want to load. This file should contain the chat history data in a JSON format.
     """
-    loaded_message = load_json(history_file_path)
+    loaded_message = load_file(history_file_path)
     history = messages_from_dict(loaded_message)
     st.session_state["memory"].chat_memory.messages = history

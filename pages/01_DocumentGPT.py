@@ -8,7 +8,7 @@ from langchain.prompts import (
 
 from src.chat_model import ChatCallbackHandler, ChatModel
 from src.manage import intro
-from src.utils import load_markdown, load_txt
+from src.utils import load_file
 
 
 def configure_chat_model():
@@ -22,7 +22,7 @@ def configure_chat_model():
     )
     messages = [
         SystemMessagePromptTemplate.from_template(
-            load_txt("./prompt_templates/document_gpt/system_message.txt")
+            load_file("./prompt_templates/document_gpt/system_message.txt")
         ),
         HumanMessagePromptTemplate.from_template("{question}"),
     ]
@@ -38,7 +38,7 @@ def run_chat_session(chat_model):
         "page_title": "DocumentGPT",
         "page_icon": "📄",
         "title": "DocumentGPT",
-        "markdown": load_markdown("./markdowns/document_gpt.md"),
+        "markdown": load_file("./markdowns/document_gpt.md"),
         "history_file_path": "./.cache/chat_history/history.json",
         "prompt": chat_model.prompt,
         "llm": chat_model.llm,
