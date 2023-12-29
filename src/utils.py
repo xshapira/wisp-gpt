@@ -1,12 +1,24 @@
 import json
+from functools import singledispatch
 from pathlib import Path
-from typing import overload
 
 
-@overload
-def load_file(path: str) -> str:
+@singledispatch
+def load_file(path):
     """
-    Loads a text file and returns its contents as a string.
+    Default implementation of the `load_file` function.
+    """
+    try:
+        with open(path) as fp:
+            return fp.read()
+    except ValueError as exc:
+        raise ValueError(f"Failed to load file: {exc}") from exc
+
+
+@load_file.register
+def _(path: str) -> str:
+    """
+    Loads a text or Markdown file and returns its contents as a string.
 
     Args:
         file_path (str): The path to the text file to be loaded.
@@ -18,23 +30,8 @@ def load_file(path: str) -> str:
         return fp.read()
 
 
-@overload
-def load_file(path: str) -> str:
-    """
-    Loads a Markdown file and returns its contents as a string.
-
-    Args:
-        file_path (str): The path to the Markdown file to be loaded.
-
-    Returns:
-        str: The contents of the Markdown file.
-    """
-    with open(path) as fp:
-        return fp.read()
-
-
-@overload
-def load_file(path: Path) -> dict:
+@load_file.register
+def _(path: Path) -> dict:
     """
     Loads a JSON file and returns its contents as a dictionary.
 
@@ -46,14 +43,3 @@ def load_file(path: Path) -> dict:
     """
     with open(path) as fp:
         return json.load(fp)
-
-
-def load_file(path):
-    """
-    Default implementation of the `load_file` function.
-    """
-    try:
-        with open(path) as fp:
-            return fp.read()
-    except ValueError as exc:
-        raise ValueError(f"Failed to load file: {exc}") from exc
