@@ -12,7 +12,8 @@ from src.utils import load_file
 
 
 def configure_chat_model():
-    chat_model = ChatModel(
+    chat_model = ChatModel()
+    chat_model.llm = ChatOllama(
         model="mistral:latest",
         temperature=0.1,
         streaming=True,
@@ -20,7 +21,6 @@ def configure_chat_model():
             ChatCallbackHandler(),
         ],
     )
-    chat_model.llm = ChatOllama()
     messages = [
         SystemMessagePromptTemplate.from_template(
             load_file("./prompt_templates/private_gpt/system_message.txt")
