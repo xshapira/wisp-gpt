@@ -1,18 +1,26 @@
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOllama
+from langchain.embeddings import OllamaEmbeddings
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
 
-from src.chat_model import ChatModel
+from src.chat_model import ChatCallbackHandler, ChatModel
 from src.manage import intro
 from src.utils import load_file
 
 
 def configure_chat_model():
-    chat_model = ChatModel()
-    chat_model.llm = ChatOpenAI()
+    chat_model = ChatModel(
+        model="mistral:latest",
+        temperature=0.1,
+        streaming=True,
+        callbacks=[
+            ChatCallbackHandler(),
+        ],
+    )
+    chat_model.llm = ChatOllama()
     messages = [
         SystemMessagePromptTemplate.from_template(
             load_file("./prompt_templates/private_gpt/system_message.txt")
@@ -20,11 +28,12 @@ def configure_chat_model():
         HumanMessagePromptTemplate.from_template("{question}"),
     ]
     chat_model.prompt = ChatPromptTemplate.from_messages(messages=messages)
-    chat_model.memory_llm = ChatOpenAI()
+    chat_model.memory_llm = ChatOllama()
     return chat_model
 
 
 def run_chat_session(chat_model):
+    embeddings = OllamaEmbeddings(model="mistral:latest")
     intro_config = {
         "page_title": "PrivateGPT",
         "page_icon": "🔒",
@@ -36,7 +45,7 @@ def run_chat_session(chat_model):
         "chat_session_args": {
             "_file_path": "private_files",
             "_cache_dir": "private_embeddings",
-            "_embeddings": "OpenAIEmbeddings()",
+            "_embeddings": embeddings,
         },
     }
     intro(**intro_config)
