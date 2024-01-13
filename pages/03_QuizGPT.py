@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import streamlit as st
 from langchain.callbacks import StreamingStdOutCallbackHandler
@@ -9,20 +10,10 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
 )
 from langchain.retrievers import WikipediaRetriever
-from langchain.schema import BaseOutputParser
 from langchain.text_splitter import CharacterTextSplitter
 
 from src.chat_session import format_docs
 from src.utils import load_file
-
-
-class JsonOutputParser(BaseOutputParser):
-    def parse(self, text):
-        text = text.replace("```", "").replace("json", "")
-        return json.loads(text)
-
-
-output_parser = JsonOutputParser()
 
 st.set_page_config(
     page_title="QuizGPT",
@@ -31,6 +22,9 @@ st.set_page_config(
 
 st.title("QuizGPT")
 
+quiz_schema_filename = Path("./prompt_templates/quiz_gpt/quiz_schema.json")
+quiz_schema = load_file(quiz_schema_filename)
+
 llm = ChatOpenAI(
     temperature=0.1,
     model="gpt-3.5-turbo-1106",
@@ -38,6 +32,9 @@ llm = ChatOpenAI(
     callbacks=[
         StreamingStdOutCallbackHandler(),
     ],
+).bind(
+    function_call={"name": "generate_quiz"},
+    functions=[quiz_schema],
 )
 
 questions_prompt_message = [
@@ -45,16 +42,8 @@ questions_prompt_message = [
         load_file("./prompt_templates/quiz_gpt/system_message.txt")
     ),
 ]
-formatting_prompt_message = [
-    SystemMessagePromptTemplate.from_template(
-        load_file("./prompt_templates/quiz_gpt/system_message_formatting.txt")
-    ),
-]
 questions_prompt = ChatPromptTemplate.from_messages(questions_prompt_message)
 questions_chain = {"context": format_docs} | questions_prompt | llm
-
-formatting_prompt = ChatPromptTemplate.from_messages(formatting_prompt_message)
-formatting_chain = formatting_prompt | llm
 
 
 @st.cache_data(show_spinner="Loading file...")
@@ -76,8 +65,7 @@ def split_file(file):
 
 @st.cache_data(show_spinner="Creating quiz...")
 def run_quiz_chain(_docs, topic):
-    chain = {"context": questions_chain} | formatting_chain | output_parser
-    return chain.invoke(_docs)
+    return questions_chain.invoke(_docs)
 
 
 @st.cache_data(show_spinner="Searching Wikipedia...")
@@ -109,11 +97,14 @@ if not docs:
     st.markdown(markdown_file)
 else:
     response = run_quiz_chain(docs, topic or file.name)
+    function_call_arguments = response.additional_kwargs["function_call"]["arguments"]
+    response = json.loads(function_call_arguments)
+
     with st.form("questions_form"):
-        for index, question in enumerate(response["questions"]):
-            st.write(question["question"])
+        for index, question in enumerate(response["questions"], 1):
+            st.write(f"{index}.", question["question"])
             value = st.radio(
-                f"Select your answer {index}",
+                "Select your answer",
                 [answer["answer"] for answer in question["answers"]],
                 key=f"{index}_radio",
                 index=None,
