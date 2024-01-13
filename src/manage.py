@@ -44,9 +44,9 @@ def intro(
             "Upload a file (.txt, .pdf or .docx)",
             type=["pdf", "docx", "txt"],
         )
-        history_file_path = Path(history_file_path)
-        if history_file_path.exists():
-            load_history_from_file(history_file_path)
+        history_file = Path(history_file_path)
+        if history_file.exists():
+            load_history_from_file(history_file)
 
     if file:
         manage_chat_session(
