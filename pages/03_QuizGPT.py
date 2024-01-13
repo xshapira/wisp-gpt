@@ -98,7 +98,7 @@ def run_quiz_gpt(chat_model, docs=None, topic=None):
         response = json.loads(function_call_arguments)
 
         with st.form("questions_form"):
-            for index, question in enumerate(response["questions"], 1):
+            for index, question in enumerate(response["questions"], start=1):
                 st.write(f"{index}.", question["question"])
                 value = st.radio(
                     "Select your answer",
