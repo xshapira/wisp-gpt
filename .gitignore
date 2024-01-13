@@ -11,7 +11,7 @@ codiga.yml
 .python-version
 notebook_preferred.ipynb
 langchain_practice.ipynb
-notebook.ipynb
+notebook*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
