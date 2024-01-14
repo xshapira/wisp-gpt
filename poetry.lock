@@ -3733,6 +3733,26 @@ docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.1)", "sphinx-
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytest-mock (>=3.11.1)"]
 
 [[package]]
+name = "playwright"
+version = "1.40.0"
+description = "A high-level API to automate web browsers"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "playwright-1.40.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:35b7e0b389df2aa632f3614d35be7bace35f6f634d880db44b035c83e4481312"},
+    {file = "playwright-1.40.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:382a7465cc0ea3bf7fa66716bd37fd53f66af4bcc5c72283a8eff3f6e87758a8"},
+    {file = "playwright-1.40.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:f11e1ec32f3b3dbd7f24d1481c313cb527001955004ee88a73f9b4a610d0db28"},
+    {file = "playwright-1.40.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:6a842dca4dd53feda1d7bd0e14aa65140e4e816452ebddd307e90cad184d92bd"},
+    {file = "playwright-1.40.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4ec3746de69e7ba912b70e0fe3a3c6b8af97f21ece793c5db27c251da4d2f3e6"},
+    {file = "playwright-1.40.0-py3-none-win32.whl", hash = "sha256:3ae90ea5ad776fe5e1300a9c730244c8e57a183c6eb261044418710d51ae03c0"},
+    {file = "playwright-1.40.0-py3-none-win_amd64.whl", hash = "sha256:ba5a89953aedb158025e4581eafb6fdeebb3d58acd9ce24b59f691b1e2a861bc"},
+]
+
+[package.dependencies]
+greenlet = "3.0.1"
+pyee = "11.0.1"
+
+[[package]]
 name = "plotly"
 version = "5.16.0"
 description = "An open-source, interactive data visualization library for Python"
@@ -4293,6 +4313,23 @@ files = [
     {file = "pydub-0.25.1-py2.py3-none-any.whl", hash = "sha256:65617e33033874b59d87db603aa1ed450633288aefead953b30bded59cb599a6"},
     {file = "pydub-0.25.1.tar.gz", hash = "sha256:980a33ce9949cab2a569606b65674d748ecbca4f0796887fd6f46173a7b0d30f"},
 ]
+
+[[package]]
+name = "pyee"
+version = "11.0.1"
+description = "A rough port of Node.js's EventEmitter to Python with a few tricks of its own"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyee-11.0.1-py3-none-any.whl", hash = "sha256:9bcc9647822234f42c228d88de63d0f9ffa881e87a87f9d36ddf5211f6ac977d"},
+    {file = "pyee-11.0.1.tar.gz", hash = "sha256:a642c51e3885a33ead087286e35212783a4e9b8d6514a10a5db4e57ac57b2b29"},
+]
+
+[package.dependencies]
+typing-extensions = "*"
+
+[package.extras]
+dev = ["black", "flake8", "flake8-black", "isort", "jupyter-console", "mkdocs", "mkdocs-include-markdown-plugin", "mkdocstrings[python]", "pytest", "pytest-asyncio", "pytest-trio", "toml", "tox", "trio", "trio", "trio-typing", "twine", "twisted", "validate-pyproject[all]"]
 
 [[package]]
 name = "pygments"
@@ -7099,4 +7136,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "aba3c35f56993ee1bd3e4df6d5ab763e748b20323eaade452000b7e7710674d7"
+content-hash = "fdd61d085e4914928f2fca8a511d3a22a2f53e239f017d2145f9cf2424dd42da"

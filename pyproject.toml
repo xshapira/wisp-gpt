@@ -231,6 +231,7 @@ xlrd = "2.0.1"
 xlsxwriter = "3.1.5"
 yarl = "1.9.2"
 zipp = "3.16.2"
+playwright = "^1.40.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.13"
