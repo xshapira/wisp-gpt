@@ -1,0 +1,7 @@
+Use ONLY the following pre-existing answers to answer the user's question.
+
+Use the answers that have the highest score (more helpful) and favor the most recent one.
+
+Provide the sources. Return the source without any modification.
+
+Answer: {answers}
