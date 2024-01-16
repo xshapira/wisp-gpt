@@ -15,32 +15,42 @@ from langchain.vectorstores.faiss import FAISS
 
 from src.utils import load_file
 
-llm = ChatOpenAI(
-    temperature=0.1,
-)
 
-answers_messages = [
-    SystemMessagePromptTemplate.from_template(
-        load_file("./prompt_templates/site_gpt/system_message_answers.txt")
-    ),
-    HumanMessagePromptTemplate.from_template("{question}"),
-]
+class ChatModel:
+    def __init__(self):
+        self.llm = ChatOpenAI(
+            temperature=0.1,
+        )
 
-choose_messages = [
-    SystemMessagePromptTemplate.from_template(
-        load_file("./prompt_templates/site_gpt/system_message.txt")
-    ),
-    HumanMessagePromptTemplate.from_template("{question}"),
-]
+        self.answers_messages = [
+            SystemMessagePromptTemplate.from_template(
+                load_file("./prompt_templates/site_gpt/system_message_answers.txt")
+            ),
+            HumanMessagePromptTemplate.from_template("{question}"),
+        ]
 
-answers_prompt = ChatPromptTemplate.from_messages(messages=answers_messages)
-choose_prompt = ChatPromptTemplate.from_messages(messages=choose_messages)
+        self.choose_messages = [
+            SystemMessagePromptTemplate.from_template(
+                load_file("./prompt_templates/site_gpt/system_message.txt")
+            ),
+            HumanMessagePromptTemplate.from_template("{question}"),
+        ]
+
+        self.answers_prompt = ChatPromptTemplate.from_messages(
+            messages=self.answers_messages
+        )
+        self.choose_prompt = ChatPromptTemplate.from_messages(
+            messages=self.choose_messages
+        )
+
+
+chat_model = ChatModel()
 
 
 def get_answers(input):
     docs = input["context"]
     question = input["question"]
-    answers_chain = answers_prompt | llm
+    answers_chain = chat_model.answers_prompt | chat_model.llm
     result = {
         "question": question,
         "answers": [
@@ -63,7 +73,7 @@ def get_answers(input):
 def choose_answer(input):
     answers = input["answers"]
     question = input["question"]
-    choose_chain = choose_prompt | llm
+    choose_chain = chat_model.choose_prompt | chat_model.llm
     shortened = "\n\n".join(
         f"{answer['answer']}\nSource: {answer['source']}\n(Date: {answer['date']})\n"
         for answer in answers
@@ -117,46 +127,47 @@ def load_website(url):
     return vector_store.as_retriever()
 
 
-st.set_page_config(
-    page_title="SiteGPT",
-    page_icon="🖥️",
-)
+def run_site_gpt():
+    with st.sidebar:
+        url = st.text_input(
+            "Enter a URL:",
+            placeholder="https://example.com",
+        )
+
+    if url:
+        if ".xml" not in url:
+            with st.sidebar:
+                st.error("The URL must end with .xml")
+        else:
+            retriever = load_website(url)
+            query = st.text_input("Ask a question about the content of the website.")
+            if query:
+                chain = (
+                    {
+                        "context": retriever,
+                        "question": RunnablePassthrough(),
+                    }
+                    | RunnableLambda(get_answers)
+                    | RunnableLambda(choose_answer)
+                )
+
+                result = chain.invoke(query)
+                st.write(result.content.replace("$", r"\$"))
 
 
-st.markdown(
-    """
-    # SiteGPT
-
-    Ask questions about the content of a website.
-
-    Start by writing the URL of the website in the sidebar.
-    """
-)
-
-
-with st.sidebar:
-    url = st.text_input(
-        "Enter a URL:",
-        placeholder="https://example.com",
+def intro(markdown):
+    st.set_page_config(
+        page_title="SiteGPT",
+        page_icon="🖥️",
     )
+    st.markdown(markdown)
 
 
-if url:
-    if ".xml" not in url:
-        with st.sidebar:
-            st.error("The URL must end with .xml")
-    else:
-        retriever = load_website(url)
-        query = st.text_input("Ask a question about the content of the website.")
-        if query:
-            chain = (
-                {
-                    "context": retriever,
-                    "question": RunnablePassthrough(),
-                }
-                | RunnableLambda(get_answers)
-                | RunnableLambda(choose_answer)
-            )
+def main() -> None:
+    markdown_file = load_file("./markdowns/site_gpt.md")
+    intro(markdown_file)
+    run_site_gpt()
 
-            result = chain.invoke(query)
-            st.write(result.content.replace("$", r"\$"))
+
+if __name__ == "__main__":
+    main()
