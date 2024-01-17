@@ -18,6 +18,9 @@ from src.utils import load_file
 
 class ChatModel:
     def __init__(self, quiz_schema):
+        """
+        Initializes a ChatModel instance with a quiz generation schema. Binds the schema to an LLM instance from ChatOpenAI. Provides chat prompts and chains for generating quiz questions.
+        """
         self.llm = ChatOpenAI(
             temperature=0.1,
             model="gpt-3.5-turbo-1106",
@@ -45,6 +48,18 @@ class ChatModel:
 
 @st.cache_data(show_spinner="Loading file...")
 def split_file(file):
+    """
+    Takes a file as input and splits the content into chunks to optimize
+    relevance and quality of LLM responses.
+
+    Chunks are returned as Documents.
+
+    Args:
+        file: the file that you want to split.
+
+    Returns:
+        Chunks of content.
+    """
     file_content = file.read()
     file_path = f"./.cache/quiz_files/{file.name}"
 
@@ -62,11 +77,36 @@ def split_file(file):
 
 @st.cache_data(show_spinner="Creating quiz...")
 def run_quiz_chain(_docs, topic, _chat_model):
+    """
+    Runs only once and and caches the results.
+
+    We add '_' to docs and chat_model to prevent them from becoming part of
+    the function signature (this avoids an "UnhashableParamError").
+
+    Adding another parameter allows re-running when there are changes in the documents.
+
+    Args:
+        _docs: The input documents.
+        topic: The quiz topic.
+        _chat_model: An instance of the ChatModel class.
+
+    Returns:
+        The output of running quiz chain on the documents.
+    """
     return _chat_model.questions_chain.invoke(_docs)
 
 
 @st.cache_data(show_spinner="Searching Wikipedia...")
 def wiki_search(term):
+    """
+    Retrieves the top 3 relevant Wikipedia articles for a given search term.
+
+    Args:
+        term: The search term to search.
+
+    Returns:
+        The relevant documents retrieved from Wikipedia based on the given search term.
+    """
     retriever = WikipediaRetriever(top_k_results=3)
     return retriever.get_relevant_documents(term)
 
