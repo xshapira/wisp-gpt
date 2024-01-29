@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import streamlit as st
 from langchain.chat_models import ChatOpenAI
@@ -16,6 +17,7 @@ from langchain.vectorstores.faiss import FAISS
 
 from src.chat_model import ChatCallbackHandler
 from src.chat_session import display_chat_history, send_message
+from src.chat_session_manager import load_history_from_file, restore_history_from_memory
 from src.utils import load_file
 
 
@@ -153,6 +155,9 @@ def run_site_gpt():
             "Enter a URL:",
             placeholder="https://example.com",
         )
+        history_file = Path("./.cache/chat_questions_history/history.json")
+        if history_file.exists():
+            load_history_from_file(history_file)
 
     if url:
         if ".xml" not in url:
@@ -161,7 +166,7 @@ def run_site_gpt():
         else:
             retriever = load_website(url)
             send_message("I'm ready! Ask away.", "ai", save=False)
-            # restore history goes here...
+            restore_history_from_memory()
             display_chat_history()
 
             query = st.chat_input("Ask a question about the content of the website.")
