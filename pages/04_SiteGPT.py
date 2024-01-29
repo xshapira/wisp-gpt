@@ -13,6 +13,8 @@ from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
 
+from src.chat_model import ChatCallbackHandler
+from src.chat_session import display_chat_history, send_message
 from src.utils import load_file
 
 
@@ -20,6 +22,10 @@ class ChatModel:
     def __init__(self):
         self.llm = ChatOpenAI(
             temperature=0.1,
+            streaming=True,
+            callbacks=[
+                ChatCallbackHandler(),
+            ],
         )
 
         self.answers_messages = [
@@ -75,7 +81,7 @@ def choose_answer(input):
     question = input["question"]
     choose_chain = chat_model.choose_prompt | chat_model.llm
     shortened = "\n\n".join(
-        f"{answer['answer']}\nSource: {answer['source']}\n(Date: {answer['date']})\n"
+        f"{answer['answer']}\n\nSource: {answer['source']}\n\n(Date: {answer['date']})\n\n"
         for answer in answers
     )
     return choose_chain.invoke(
@@ -140,8 +146,13 @@ def run_site_gpt():
                 st.error("The URL must end with .xml")
         else:
             retriever = load_website(url)
-            query = st.text_input("Ask a question about the content of the website.")
+            send_message("I'm ready! Ask away.", "ai", save=False)
+            # restore history goes here...
+            display_chat_history()
+
+            query = st.chat_input("Ask a question about the content of the website.")
             if query:
+                send_message(query, "human")
                 chain = (
                     {
                         "context": retriever,
@@ -151,8 +162,11 @@ def run_site_gpt():
                     | RunnableLambda(choose_answer)
                 )
 
-                result = chain.invoke(query)
-                st.write(result.content.replace("$", r"\$"))
+                with st.chat_message("ai"):
+                    result = chain.invoke(query)
+                    st.markdown(result.content.replace("$", "\$"))  # noqa: W605
+    else:
+        st.session_state["messages"] = []
 
 
 def intro(markdown):
