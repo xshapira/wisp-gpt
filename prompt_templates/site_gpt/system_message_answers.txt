@@ -1,4 +1,6 @@
-Using ONLY the following context, answer the user's question. If you don't know the answer, respond "I don't know." Do not make anything up.
+Using ONLY the following context, answer the user's question. If you don't know the answer — DO NOT make anything up.
+
+DO NOT give the user the same answers!
 
 Then, assign a 0-5 score to the answer, with 0 being unhelpful and 5 being very helpful to the user.
 
