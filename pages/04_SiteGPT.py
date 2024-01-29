@@ -149,6 +149,29 @@ def load_website(url):
     return vector_store.as_retriever()
 
 
+def manage_chat_session(url):
+    retriever = load_website(url)
+    send_message("I'm ready! Ask away.", "ai", save=False)
+    restore_history_from_memory()
+    display_chat_history()
+
+    query = st.chat_input("Ask a question about the content of the website.")
+    if query:
+        send_message(query, "human")
+        chain = (
+            {
+                "context": retriever,
+                "question": RunnablePassthrough(),
+            }
+            | RunnableLambda(get_answers)
+            | RunnableLambda(choose_answer)
+        )
+
+        with st.chat_message("ai"):
+            result = chain.invoke(query)
+            st.markdown(result.content.replace("$", "\$"))  # noqa: W605
+
+
 def run_site_gpt():
     with st.sidebar:
         url = st.text_input(
@@ -164,26 +187,7 @@ def run_site_gpt():
             with st.sidebar:
                 st.error("The URL must end with .xml")
         else:
-            retriever = load_website(url)
-            send_message("I'm ready! Ask away.", "ai", save=False)
-            restore_history_from_memory()
-            display_chat_history()
-
-            query = st.chat_input("Ask a question about the content of the website.")
-            if query:
-                send_message(query, "human")
-                chain = (
-                    {
-                        "context": retriever,
-                        "question": RunnablePassthrough(),
-                    }
-                    | RunnableLambda(get_answers)
-                    | RunnableLambda(choose_answer)
-                )
-
-                with st.chat_message("ai"):
-                    result = chain.invoke(query)
-                    st.markdown(result.content.replace("$", "\$"))  # noqa: W605
+            manage_chat_session(url)
     else:
         st.session_state["messages"] = []
 
