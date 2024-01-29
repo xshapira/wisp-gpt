@@ -4,6 +4,7 @@ import streamlit as st
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import SitemapLoader
 from langchain.embeddings import OpenAIEmbeddings
+from langchain.memory import ConversationSummaryBufferMemory
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -48,6 +49,19 @@ class ChatModel:
         self.choose_prompt = ChatPromptTemplate.from_messages(
             messages=self.choose_messages
         )
+
+    def configure_chat_memory(self):
+        self.memory_llm = ChatOpenAI(
+            temperature=0.1,
+        )
+
+        if "memory" not in st.session_state:
+            st.session_state["memory"] = ConversationSummaryBufferMemory(
+                llm=self.memory_llm,
+                max_token_limit=120,
+                memory_key="chat_history",
+                return_messages=True,
+            )
 
 
 chat_model = ChatModel()
