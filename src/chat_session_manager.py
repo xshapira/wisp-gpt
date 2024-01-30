@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import streamlit as st
 from langchain.schema import messages_from_dict, messages_to_dict
@@ -59,11 +60,24 @@ def save_history_to_file(history_file_path):
     Args:
         history_file_path: The file path where you want to save the chat history. It should be a string representing the file path.
     """
+    history_file = Path(history_file_path)
     history = st.session_state["memory"].chat_memory.messages
     history = messages_to_dict(history)
 
+    if history_file.exists():
+        # file exists, read the existing content first
+        with history_file.open("r") as fp:
+            existing_history = json.load(fp)
+
+        # update existing history with new content
+        updated_history = existing_history | history
+    else:
+        # history doesn't exists, create new history
+        updated_history = history
+
+    # write the updated history to the file
     with open(history_file_path, "w") as fp:
-        json.dump(history, fp, indent=2)
+        json.dump(updated_history, fp, indent=2)
 
 
 def restore_history_from_memory():
