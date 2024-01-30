@@ -70,8 +70,9 @@ def calculate_similarity(new_entry, existing_entries):
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform(documents)
     cosine_similarities = cosine_similarity(
-        tfidf_matrix[-1], tfidf_matrix[:-1].flatten()
-    )
+        tfidf_matrix[-1], tfidf_matrix[:-1]
+    ).flatten()
+
     return any(similarity > 0.8 for similarity in cosine_similarities)
 
 
