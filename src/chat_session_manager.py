@@ -66,17 +66,17 @@ def save_history_to_file(history_file_path):
 
     if history_file.exists():
         # file exists, read the existing content first
-        with history_file.open("r") as fp:
+        with open(history_file) as fp:
             existing_history = json.load(fp)
 
         # update existing history with new content
-        updated_history = existing_history | history
+        updated_history = existing_history + history
     else:
         # history doesn't exists, create new history
         updated_history = history
 
     # write the updated history to the file
-    with open(history_file_path, "w") as fp:
+    with open(history_file, "w") as fp:
         json.dump(updated_history, fp, indent=2)
 
 
