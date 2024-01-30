@@ -3,6 +3,8 @@ from pathlib import Path
 
 import streamlit as st
 from langchain.schema import messages_from_dict, messages_to_dict
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from src.utils import load_file
 
@@ -53,6 +55,26 @@ def save_history(input, output):
     )
 
 
+def calculate_similarity(new_entry, existing_entries):
+    """
+    Calculates similarity of the new entry against existing entries using TF-IDF and cosine similarity.
+
+    Args:
+        new_entry: The new entry to be checked.
+        existing_entries: The list of existing history entries.
+
+    Returns:
+        True if a similar entry exists, False otherwise.
+    """
+    documents = [entry["data"]["content"] for entry in existing_entries]
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(documents)
+    cosine_similarities = cosine_similarity(
+        tfidf_matrix[-1], tfidf_matrix[:-1].flatten()
+    )
+    return any(similarity > 0.8 for similarity in cosine_similarities)
+
+
 def save_history_to_file(history_file_path):
     """
     Saves the chat history to a file in JSON format.
@@ -69,8 +91,11 @@ def save_history_to_file(history_file_path):
         with open(history_file) as fp:
             existing_history = json.load(fp)
 
+        for entry in history:
+            if not calculate_similarity(entry, existing_history):
+                existing_history.append(entry)
         # update existing history with new content
-        updated_history = existing_history + history
+        updated_history = existing_history
     else:
         # history doesn't exists, create new history
         updated_history = history
