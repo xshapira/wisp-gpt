@@ -67,13 +67,20 @@ def calculate_similarity(new_entry, existing_entries):
         True if a similar entry exists, False otherwise.
     """
     documents = [entry["data"]["content"] for entry in existing_entries]
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(documents)
-    cosine_similarities = cosine_similarity(
-        tfidf_matrix[-1], tfidf_matrix[:-1]
-    ).flatten()
+    # proceed only if there are at least two documents to compare
+    if len(documents) > 1:
+        vectorizer = TfidfVectorizer()
+        tfidf_matrix = vectorizer.fit_transform(documents)
 
-    return any(similarity > 0.8 for similarity in cosine_similarities)
+        # compare the new entry (last in tfidf_matrix)
+        # to all previous entries
+        cosine_similarities = cosine_similarity(
+            tfidf_matrix[-1], tfidf_matrix[:-1]
+        ).flatten()
+        return any(similarity > 0.8 for similarity in cosine_similarities)
+
+    # if there's not enough data to compare, return False
+    return False
 
 
 def save_history_to_file(history_file_path):
