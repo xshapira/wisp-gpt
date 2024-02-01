@@ -1,6 +1,8 @@
 import re
+from operator import itemgetter
 from pathlib import Path
 
+import numpy as np
 import streamlit as st
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import SitemapLoader
@@ -14,16 +16,26 @@ from langchain.prompts import (
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from src.chat_model import ChatCallbackHandler
 from src.chat_session import display_chat_history, send_message
-from src.chat_session_manager import load_history_from_file, restore_history_from_memory
+from src.chat_session_manager import (
+    load_history_from_file,
+    restore_history_from_memory,
+    save_history,
+    save_history_to_file,
+)
 from src.utils import load_file
 
 
 class ChatModel:
     def __init__(self):
-        self.llm = ChatOpenAI(
+        self.answers_llm = ChatOpenAI(
+            temperature=0.1,
+        )
+        self.choice_llm = ChatOpenAI(
             temperature=0.1,
             streaming=True,
             callbacks=[
@@ -72,7 +84,7 @@ chat_model = ChatModel()
 def get_answers(input):
     docs = input["context"]
     question = input["question"]
-    answers_chain = chat_model.answers_prompt | chat_model.llm
+    answers_chain = chat_model.answers_prompt | chat_model.answers_llm
     result = {
         "question": question,
         "answers": [
@@ -82,7 +94,7 @@ def get_answers(input):
                         "question": question,
                         "context": doc.page_content,
                     }
-                ).content,
+                ).content.replace("$", r"\$"),
                 "source": doc.metadata["source"],
                 "date": doc.metadata["lastmod"],
             }
@@ -95,7 +107,7 @@ def get_answers(input):
 def choose_answer(input):
     answers = input["answers"]
     question = input["question"]
-    choose_chain = chat_model.choose_prompt | chat_model.llm
+    choose_chain = chat_model.choose_prompt | chat_model.choice_llm
     shortened = "\n\n".join(
         f"{answer['answer']}\n\nSource: {answer['source']}\n\n(Date: {answer['date']})\n\n"
         for answer in answers
@@ -149,7 +161,63 @@ def load_website(url):
     return vector_store.as_retriever()
 
 
-def manage_chat_session(url):
+def filter_similar_questions_quickly(query, stored_questions, top_k=10):
+    """
+    Narrows down the potential matches from a large list of stored questions
+    to a smaller subset that shares common words with the user query.
+
+    Args:
+        query: The user's question
+        stored_questions: The stored questions that we want to compare the user query against
+        top_k: The number of similar questions that we want to retrieve. Defaults to 10, but you can change it to any positive integer value.
+
+    Returns:
+        A list of the top most similar stored questions to the user query.
+    """
+    vectorizer = CountVectorizer()
+    # vectorize the user query
+    query_vector = vectorizer.fit_transform([query])
+    # vectorize the stored questions
+    stored_vectors = vectorizer.transform(stored_questions)
+    # calculate cosine similarities between the user query
+    # and the stored questions
+    similarities = cosine_similarity(query_vector, stored_vectors)
+    # get the top 10 most similar questions
+    top_similar_questions = similarities.argsort()[-top_k:][::-1]
+    # return the top most similar stored questions
+    return [stored_questions[q] for q in top_similar_questions]
+
+
+def find_most_semantic_match(query, filtered_questions):
+    """
+    Refines the filtered questions to identify the one that is most semantically similar to the user query.
+
+    Args:
+        query: The user's question
+        filtered_questions: A list of questions that have been filtered or narrowed down from a larger set of questions. These filtered questions are the ones that will be compared to the user's query to find the most semantically similar match.
+
+    Returns:
+        The most similar question from the `filtered_questions` list if the similarity score exceeds a threshold of 0.8. If none of the
+        similarities exceed the threshold, returns `None`.
+    """
+    embedder = OpenAIEmbeddings()
+    # generate embedding for the user query
+    query_embedding = embedder.encode(query)
+    # generate embeddings for filtered questions
+    filtered_embeddings = np.array(
+        [embedder.encode(question) for question in filtered_questions]
+    )
+    # calculate cosine similarities between the query embedding
+    # each question embedding
+    similarities = cosine_similarity([query_embedding], filtered_embeddings).flatten()
+
+    # identify the index of the most similar question
+    max_index = np.argmax(similarities)
+    # return the most similar question if similarity exceeds a threshold
+    return filtered_questions[max_index] if similarities[max_index] > 0.8 else None
+
+
+def manage_chat_session(url, history_file_path):
     retriever = load_website(url)
     send_message("I'm ready! Ask away.", "ai", save=False)
     restore_history_from_memory()
@@ -163,22 +231,32 @@ def manage_chat_session(url):
                 "context": retriever,
                 "question": RunnablePassthrough(),
             }
+            | RunnablePassthrough.assign(
+                chat_history=RunnableLambda(
+                    st.session_state["memory"].load_memory_variables
+                )
+                | itemgetter("chat_history")
+            )
             | RunnableLambda(get_answers)
             | RunnableLambda(choose_answer)
         )
 
         with st.chat_message("ai"):
             result = chain.invoke(query)
-            st.markdown(result.content.replace("$", "\$"))  # noqa: W605
+            save_history(query, result.content)
+
+        # checking if the chat memory contains any messages. If it does,
+        # then we save the chat history to a file.
+        if len(st.session_state["memory"].chat_memory.messages) != 0:
+            save_history_to_file(history_file_path)
 
 
-def run_site_gpt():
+def run_site_gpt(history_file):
     with st.sidebar:
         url = st.text_input(
             "Enter a URL:",
             placeholder="https://example.com",
         )
-        history_file = Path("./.cache/chat_questions_history/history.json")
         if history_file.exists():
             load_history_from_file(history_file)
 
@@ -187,9 +265,10 @@ def run_site_gpt():
             with st.sidebar:
                 st.error("The URL must end with .xml")
         else:
-            manage_chat_session(url)
+            manage_chat_session(url, history_file_path=history_file)
     else:
         st.session_state["messages"] = []
+        st.session_state["chat_history"] = []
 
 
 def intro(markdown):
@@ -202,8 +281,10 @@ def intro(markdown):
 
 def main() -> None:
     markdown_file = load_file("./markdowns/site_gpt.md")
+    history_file = Path("./.cache/chat_questions_history/history.json")
     intro(markdown_file)
-    run_site_gpt()
+    chat_model.configure_chat_memory()
+    run_site_gpt(history_file)
 
 
 if __name__ == "__main__":
