@@ -9,6 +9,7 @@ def extract_audio_from_video(video_path):
     audio_path = video_path.replace(".mp4", ".mp3")
     command = [
         "ffmpeg",
+        "-y",
         "-i",
         video_path,
         "-vn",
