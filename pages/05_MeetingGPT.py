@@ -1,6 +1,8 @@
+import glob
 import math
 import subprocess
 
+import openai
 import streamlit as st
 from pydub import AudioSegment
 
@@ -36,6 +38,24 @@ def cut_audio_in_chunks(audio_path, chunk_size, chunks_dir):
         chunk.export(f"{chunks_dir}/chunk_{i}.mp3", format="mp3")
 
 
+def transcribe_file(file):
+    with open(file, "rb") as audio_file:
+        transcript = openai.Audio.transcribe(
+            "whisper-1",
+            audio_file,
+        )
+    return transcript["text"]
+
+
+def transcribe_audio_chunks(chunks_dir, destination):
+    files = glob.glob(f"{chunks_dir}/*.mp3", recursive=True)
+    files.sort()
+    transcripts = [transcribe_file(file) for file in files]
+    final_transcript = " ".join(transcripts)
+    with open(destination, "w") as fp:
+        fp.write(final_transcript)
+
+
 markdown_file = load_file("./markdowns/meeting_gpt.md")
 st.set_page_config(
     page_title="MeetingGPT",
@@ -55,11 +75,16 @@ if video:
         video_content = video.read()
         video_path = f"./.cache/{video.name}"
         audio_path = video_path.replace(".mp4", ".mp3")
+        chunks_dir = "./.cache/audio_chunks"
+        transcript_dir = video_path.replace(".mp4", ".txt")
         with open(video_path, "wb") as fp:
             fp.write(video_content)
     with st.status("Extracting audio from video..."):
         extract_audio_from_video(video_path)
     with st.status("Cutting audio segments..."):
-        cut_audio_in_chunks(
-            audio_path, chunk_size=10, chunks_dir="./.cache/audio_chunks"
+        cut_audio_in_chunks(audio_path, chunk_size=10, chunks_dir=chunks_dir)
+    with st.status("Transcribing audio..."):
+        transcribe_audio_chunks(
+            chunks_dir=chunks_dir,
+            destination=transcript_dir,
         )
