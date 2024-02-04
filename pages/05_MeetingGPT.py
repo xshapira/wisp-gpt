@@ -1,6 +1,7 @@
 import glob
 import math
 import subprocess
+from pathlib import Path
 
 import openai
 import streamlit as st
@@ -8,8 +9,13 @@ from pydub import AudioSegment
 
 from src.utils import load_file
 
+has_transcription = Path("./.cache/podcast.txt").exists()
 
+
+@st.cache_data()
 def extract_audio_from_video(video_path):
+    if has_transcription:
+        return
     audio_path = video_path.replace(".mp4", ".mp3")
     command = [
         "ffmpeg",
@@ -25,7 +31,10 @@ def extract_audio_from_video(video_path):
     subprocess.run(command)
 
 
+@st.cache_data()
 def cut_audio_in_chunks(audio_path, chunk_size, chunks_dir):
+    if has_transcription:
+        return
     track = AudioSegment.from_mp3(audio_path)
     chunk_length = chunk_size * 60 * 1000
     chunks = math.ceil(len(track) / chunk_length)
@@ -38,7 +47,10 @@ def cut_audio_in_chunks(audio_path, chunk_size, chunks_dir):
         chunk.export(f"{chunks_dir}/chunk_{i}.mp3", format="mp3")
 
 
+@st.cache_data()
 def transcribe_file(file):
+    if has_transcription:
+        return
     with open(file, "rb") as audio_file:
         transcript = openai.Audio.transcribe(
             "whisper-1",
@@ -47,7 +59,10 @@ def transcribe_file(file):
     return transcript["text"]
 
 
+@st.cache_data()
 def transcribe_audio_chunks(chunks_dir, destination):
+    if has_transcription:
+        return
     files = glob.glob(f"{chunks_dir}/*.mp3", recursive=True)
     files.sort()
     transcripts = [transcribe_file(file) for file in files]
