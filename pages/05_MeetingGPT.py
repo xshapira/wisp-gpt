@@ -121,6 +121,13 @@ def transcribe_audio_chunks(chunks_dir, destination):
 
 
 def upload_video():
+    """
+    Displays a file uploader widget in the sidebar and allow users to upload
+    a video file.
+
+    Returns:
+        The uploaded video file object if a file is uploaded; otherwise, None.
+    """
     video = st.file_uploader(
         "Video",
         type=["mp4", "avi", "mov", "mkv"],
@@ -129,6 +136,15 @@ def upload_video():
 
 
 def process_video(video):
+    """
+    Processes the uploaded video by reading its content, extracting audio, cutting audio segments, and transcribing the audio to text.
+
+    Args:
+        video (UploadedFile): The uploaded video file to process.
+
+    Returns:
+        str: The path to the generated transcript file.
+    """
     with st.status("Loading video...") as status:
         video_content = video.read()
         video_path = f"./.cache/{video.name}"
@@ -150,11 +166,26 @@ def process_video(video):
 
 
 def display_transcript(transcript_path):
+    """
+    Displays the content of the transcript file in a tab.
+
+    Args:
+        transcript_path (str): The path to the transcript file.
+    """
     with open(transcript_path) as file:
         st.write(file.read())
 
 
 def create_summary(loader):
+    """
+    Creates a summary for the loaded text from a TextLoader object.
+
+    Args:
+        loader (TextLoader): A TextLoader object containing the text to summarize.
+
+    Returns:
+        str: The generated summary of the text.
+    """
     splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
         chunk_size=800,
         chunk_overlap=100,
@@ -186,8 +217,13 @@ def create_summary(loader):
 
 
 def generate_summary(transcript_path):
-    start = st.button("Generate summary")
+    """
+    Generates a summary of the transcript and displays it in a tab. This function initializes the summary generation process and displays the final summary.
 
+    Args:
+        transcript_path (str): The path to the transcript file used for summary generation.
+    """
+    start = st.button("Generate summary")
     if start:
         loader = TextLoader(transcript_path)
         summary = create_summary(loader)
@@ -195,6 +231,12 @@ def generate_summary(transcript_path):
 
 
 def handle_qa(transcript_path):
+    """
+    Handles the Q&A functionality by embedding the transcript and retrieving answers to a predefined question.
+
+    Args:
+        transcript_path (str): The path to the transcript file used for Q&A.
+    """
     retriever = embed_file(transcript_path)
     docs = retriever.invoke("do they talk about marcus aurelius?")
     st.write(docs)
