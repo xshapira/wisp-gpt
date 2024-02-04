@@ -49,13 +49,17 @@ with st.sidebar:
         "Video",
         type=["mp4", "avi", "mov", "mkv"],
     )
-    if video:
+
+if video:
+    with st.status("Loading video..."):
         video_content = video.read()
         video_path = f"./.cache/{video.name}"
         audio_path = video_path.replace(".mp4", ".mp3")
         with open(video_path, "wb") as fp:
             fp.write(video_content)
+    with st.status("Extracting audio from video..."):
         extract_audio_from_video(video_path)
+    with st.status("Cutting audio segments..."):
         cut_audio_in_chunks(
             audio_path, chunk_size=10, chunks_dir="./.cache/audio_chunks"
         )
