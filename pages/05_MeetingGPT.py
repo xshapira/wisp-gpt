@@ -48,6 +48,15 @@ chat_model = ChatModel()
 
 @st.cache_data()
 def embed_file(file_path):
+    """
+    Embeds a file using OpenAI embeddings and stores the embeddings in a FAISS vector store.
+
+    Args:
+        file_path (str): Path to the file to be embedded.
+
+    Returns:
+        An instance of a retriever based on FAISS vectorstore populated with embeddings from the given file.
+    """
     cache_dir = LocalFileStore(f"./.cache/embeddings/{file_path}")
     splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
         chunk_size=800,
@@ -63,6 +72,14 @@ def embed_file(file_path):
 
 @st.cache_data()
 def extract_audio_from_video(video_path):
+    """
+    Extracts audio from a given video file and saves it as an MP3 file, adjusting the tempo to 1.5x.
+
+    Skips the extraction if HAS_TRANSCRIPTION is True.
+
+    Args:
+        video_path (str): Path to the video file from which to extract audio.
+    """
     if HAS_TRANSCRIPTION:
         return
     audio_path = video_path.replace(".mp4", ".mp3")
@@ -82,6 +99,16 @@ def extract_audio_from_video(video_path):
 
 @st.cache_data()
 def cut_audio_in_chunks(audio_path, chunk_size, chunks_dir):
+    """
+    Cuts an audio file into chunks of a specified size and exports them to a specified directory.
+
+    Skips cutting if HAS_TRANSCRIPTION is True.
+
+    Args:
+        audio_path (str): Path to the audio file to be cut into chunks.
+        chunk_size (int): Length of each chunk in minutes.
+        chunks_dir (str): Directory where the audio chunks will be saved.
+    """
     if HAS_TRANSCRIPTION:
         return
     track = AudioSegment.from_mp3(audio_path)
@@ -98,6 +125,17 @@ def cut_audio_in_chunks(audio_path, chunk_size, chunks_dir):
 
 @st.cache_data()
 def transcribe_file(file):
+    """
+    Transcribes an audio file into text using OpenAI's Whisper model.
+
+    Skips transcription if HAS_TRANSCRIPTION is True.
+
+    Args:
+        file (str): Path to the audio file to be transcribed.
+
+    Returns:
+        str: The transcribed text from the audio file.
+    """
     if HAS_TRANSCRIPTION:
         return
     with open(file, "rb") as audio_file:
@@ -110,6 +148,15 @@ def transcribe_file(file):
 
 @st.cache_data()
 def transcribe_audio_chunks(chunks_dir, destination):
+    """
+    Transcribes audio chunks from a specified directory and consolidates them into a single transcript file.
+
+    Skips transcribing if HAS_TRANSCRIPTION is True.
+
+    Args:
+        chunks_dir (str): Directory containing the audio chunks to transcribe.
+        destination (str): Path to the file where the consolidated transcript will be saved.
+    """
     if HAS_TRANSCRIPTION:
         return
     files = glob.glob(f"{chunks_dir}/*.mp3", recursive=True)
@@ -243,6 +290,9 @@ def handle_qa(transcript_path):
 
 
 def run_meeting_gpt():
+    """
+    Main function to run the MeetingGPT application. It handles video upload, processes the video, and sets up tabs for displaying the transcript, summary, and Q&A functionality.
+    """
     with st.sidebar:
         video = upload_video()
 
@@ -264,6 +314,12 @@ def run_meeting_gpt():
 
 
 def intro(markdown_file):
+    """
+    Sets up the page configuration and displays the introduction markdown content.
+
+    Args:
+        markdown_file (str): The markdown content to be displayed as an introduction.
+    """
     st.set_page_config(
         page_title="MeetingGPT",
         page_icon="💼",
