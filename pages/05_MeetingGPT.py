@@ -283,6 +283,7 @@ def handle_qa(transcript_path):
     Args:
         transcript_path (str): The path to the transcript file used for Q&A.
     """
+    # TODO: add map chain, map reduce chain, or map rerank chain to answers question about the file.
     retriever = embed_file(transcript_path)
     docs = retriever.invoke("do they talk about marcus aurelius?")
     st.write(docs)
