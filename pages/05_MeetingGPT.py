@@ -43,9 +43,6 @@ class ChatModel:
         )
 
 
-chat_model = ChatModel()
-
-
 @st.cache_data()
 def embed_file(file_path):
     """
@@ -223,7 +220,7 @@ def display_transcript(transcript_path):
         st.write(file.read())
 
 
-def create_summary(loader):
+def create_summary(loader, chat_model):
     """
     Creates a summary for the loaded text from a TextLoader object.
 
@@ -263,7 +260,7 @@ def create_summary(loader):
         return summary
 
 
-def generate_summary(transcript_path):
+def generate_summary(transcript_path, chat_model):
     """
     Generates a summary of the transcript and displays it in a tab. This function initializes the summary generation process and displays the final summary.
 
@@ -273,7 +270,7 @@ def generate_summary(transcript_path):
     start = st.button("Generate summary")
     if start:
         loader = TextLoader(transcript_path)
-        summary = create_summary(loader)
+        summary = create_summary(loader, chat_model)
         st.write(summary)
 
 
@@ -297,6 +294,7 @@ def run_meeting_gpt():
         video = upload_video()
 
     if video:
+        chat_model = ChatModel()
         transcript_path = process_video(video)
         transcript_tab, summary_tab, qa_tab = st.tabs(
             [
@@ -308,7 +306,7 @@ def run_meeting_gpt():
         with transcript_tab:
             display_transcript(transcript_path)
         with summary_tab:
-            generate_summary(transcript_path)
+            generate_summary(transcript_path, chat_model)
         with qa_tab:
             handle_qa(transcript_path)
 
