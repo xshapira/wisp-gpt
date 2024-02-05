@@ -17,6 +17,8 @@ from pydub import AudioSegment
 
 from src.utils import load_file
 
+# Check if a transcription file already exists to avoid reprocessing.
+# This flag is primarily used for study purposes to save on processing resources.
 HAS_TRANSCRIPTION = Path("./.cache/podcast.txt").exists()
 
 
