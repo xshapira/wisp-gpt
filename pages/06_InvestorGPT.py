@@ -108,8 +108,8 @@ class CompanyStockPerformanceTool(BaseTool):
         sorted_weeks = sorted(
             weekly_time_series.items(), key=lambda x: x[0], reverse=True
         )
-        # return the last 10 weeks
-        return sorted_weeks[:10]
+        # return the last 156 weeks (equivalent to 3 years)
+        return sorted_weeks[:156]
 
 
 agent = initialize_agent(
