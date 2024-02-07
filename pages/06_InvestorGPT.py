@@ -134,7 +134,7 @@ agent = initialize_agent(
     },
 )
 
-company = st.text_input("Write the name of the company you are interested in.")
+company = st.text_input("Write the name of the public company you are interested in.")
 
 if company:
     result = agent.invoke(company)
