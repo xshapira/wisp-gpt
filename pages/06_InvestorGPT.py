@@ -5,6 +5,7 @@ import requests
 import streamlit as st
 from langchain.agents import AgentType, initialize_agent
 from langchain.chat_models import ChatOpenAI
+from langchain.schema import SystemMessage
 from langchain.tools import BaseTool
 from langchain.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from pydantic import BaseModel, Field
@@ -102,7 +103,13 @@ class CompanyStockPerformanceTool(BaseTool):
         req = requests.get(
             f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY&symbol={symbol}&apikey={ALPHA_VANTAGE_API_KEY}"
         )
-        return req.json()
+        weekly_time_series = req.json()["Weekly Time Series"]
+        # convert dictionary to a list of items and sort them by date in descending order to get the latest weeks first
+        sorted_weeks = sorted(
+            weekly_time_series.items(), key=lambda x: x[0], reverse=True
+        )
+        # return the last 10 weeks
+        return sorted_weeks[:10]
 
 
 agent = initialize_agent(
@@ -116,4 +123,19 @@ agent = initialize_agent(
         CompanyIncomeStatementTool(),
         CompanyStockPerformanceTool(),
     ],
+    agent_kwargs={
+        "system_message": SystemMessage(
+            content="""
+            You are an experienced hedge fund manager analyzing stocks for potential investment opportunities.
+
+            Your task is to conduct a thorough evaluation of a company's financial health and market performance to determine if it is worth investing in.
+            """
+        ),
+    },
 )
+
+company = st.text_input("Write the name of the company you are interested in.")
+
+if company:
+    result = agent.invoke(company)
+    st.write(result["output"])
