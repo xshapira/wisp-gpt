@@ -3,6 +3,7 @@ name = "Wisp"
 version = "0.0.2"
 description = "WispGPT - Clever as a wisp, powerful as GPT - your personal AI sidekick"
 authors = ["Max Shapira <max@winoutt.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
