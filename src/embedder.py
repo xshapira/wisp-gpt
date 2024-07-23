@@ -8,7 +8,7 @@ from langchain_text_splitters import CharacterTextSplitter
 
 class Embedder:
     @classmethod
-    @st.cache_data(show_spinner="Embedding file...")
+    @st.cache_resource(show_spinner="Embedding file...")
     def embed_file(
         cls,
         file,
