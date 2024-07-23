@@ -27,21 +27,8 @@ pre-commit = "3.7.1"
 ipykernel = "6.26.0"
 pytest = "7.2.2"
 
-[tool.mypy]
-disallow_untyped_defs = true
-disallow_any_unimported = true
-no_implicit_optional = true
-strict_equality = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_return_any = true
-check_untyped_defs = true
-show_error_codes = true
-
-[[tool.mypy.overrides]]
-module = ['tests.*']
-disallow_untyped_defs = false
-strict_equality = false
+[tool.basedpyright]
+typeCheckingMode = "all"
 
 [tool.ruff]
 line-length = 88
