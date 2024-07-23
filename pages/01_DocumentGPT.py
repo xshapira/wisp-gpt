@@ -1,10 +1,9 @@
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.prompts import (
+from langchain_core.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from src.chat_model import ChatCallbackHandler, ChatModel
 from src.manage import intro

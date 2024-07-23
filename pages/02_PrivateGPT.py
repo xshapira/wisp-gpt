@@ -1,6 +1,6 @@
-from langchain.chat_models import ChatOllama
-from langchain.embeddings import OllamaEmbeddings
-from langchain.prompts import (
+from langchain_community.chat_models import ChatOllama
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_core.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,

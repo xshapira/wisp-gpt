@@ -4,18 +4,17 @@ from pathlib import Path
 
 import numpy as np
 import streamlit as st
-from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import SitemapLoader
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationSummaryBufferMemory
-from langchain.prompts import (
+from langchain_community.document_loaders import SitemapLoader
+from langchain_community.vectorstores import FAISS
+from langchain_core.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
-from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores.faiss import FAISS
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 

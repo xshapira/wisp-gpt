@@ -2,15 +2,12 @@ import json
 from pathlib import Path
 
 import streamlit as st
-from langchain.callbacks import StreamingStdOutCallbackHandler
-from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import UnstructuredFileLoader
-from langchain.prompts import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-)
-from langchain.retrievers import WikipediaRetriever
-from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.document_loaders import UnstructuredFileLoader
+from langchain_community.retrievers import WikipediaRetriever
+from langchain_core.callbacks import StreamingStdOutCallbackHandler
+from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_text_splitters import CharacterTextSplitter
 
 from src.chat_session import format_docs
 from src.utils import load_file

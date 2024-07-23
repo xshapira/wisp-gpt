@@ -1,6 +1,6 @@
 import streamlit as st
-from langchain.callbacks.base import BaseCallbackHandler
 from langchain.memory import ConversationSummaryBufferMemory
+from langchain_core.callbacks import BaseCallbackHandler
 
 from src.chat_session_manager import save_message
 

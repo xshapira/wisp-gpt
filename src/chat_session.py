@@ -1,7 +1,7 @@
 from operator import itemgetter
 
 import streamlit as st
-from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 
 from src.chat_session_manager import (
     display_chat_history,

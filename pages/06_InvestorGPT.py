@@ -4,10 +4,10 @@ from typing import Type
 import requests
 import streamlit as st
 from langchain.agents import AgentType, initialize_agent
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage
-from langchain.tools import BaseTool
-from langchain.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
+from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
+from langchain_core.messages import SystemMessage
+from langchain_core.tools import BaseTool
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
 from src.utils import load_file

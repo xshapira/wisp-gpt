@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 import streamlit as st
-from langchain.schema import messages_from_dict, messages_to_dict
+from langchain_core.messages import messages_from_dict, messages_to_dict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
