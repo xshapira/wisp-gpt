@@ -2,7 +2,7 @@
 
 ### Welcome to WispGPT - your personal AI sidekick
 
-&nbsp; 
+&nbsp;
 
 ##### I'm here to empower your potential with AI superpowers at your fingertips
 
@@ -18,6 +18,6 @@
 
 * [📈 InvestorGPT](/InvestorGPT) - Get insights on any public company with financial analysis and news reports
 
-&nbsp; 
+&nbsp;
 
 ###### Ready to give me a try? Pick one of my superpowers to start using me now
