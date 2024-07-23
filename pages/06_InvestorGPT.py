@@ -49,9 +49,9 @@ class StockMarketSymbolSearchTool(BaseTool):
     It takes a query string as an argument.
     Example query: Stock market Symbol for Apple Company
     """
-    args_schema: Type[
+    args_schema: Type[StockMarketSymbolSearchToolSchema] = (
         StockMarketSymbolSearchToolSchema
-    ] = StockMarketSymbolSearchToolSchema
+    )
 
     def _run(self, query):
         search = DuckDuckGoSearchAPIWrapper()
