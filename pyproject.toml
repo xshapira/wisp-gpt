@@ -33,7 +33,7 @@ typeCheckingMode = "all"
 [tool.ruff]
 line-length = 88
 exclude = ['.git', '__pycache__', '__init__.py', '.mypy_cache', '.pytest_cache']
-select = [
+lint.select = [
   "E",  # pycodestyle errors
   "W",  # pycodestyle warnings
   "F",  # pyflakes
@@ -42,16 +42,16 @@ select = [
   "B",  # flake8-bugbear
   "UP", # pyupgrade
 ]
-ignore = [
+lint.ignore = [
   "E501", # line too long
   "C901", # Comprehension is too complex (11 > 10)
   "W191", # indentation contains tabs
   "E402",
 ]
-unfixable = ["F841"]
+lint.unfixable = ["F841"]
 extend-include = ["*.ipynb"]
 
-[tool.ruff.pyupgrade]
+[tool.ruff.lint.pyupgrade]
 # Preserve types, even if a file imports `from __future__ import annotations`.
 keep-runtime-typing = true
 
