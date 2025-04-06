@@ -2,12 +2,12 @@ import json
 from pathlib import Path
 
 import streamlit as st
-from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_community.retrievers import WikipediaRetriever
 from langchain_core.callbacks import StreamingStdOutCallbackHandler
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
+from langchain_unstructured import UnstructuredLoader
 
 from src.chat_session import format_docs
 from src.utils import load_file
@@ -68,7 +68,7 @@ def split_file(file):
         chunk_size=600,
         chunk_overlap=100,
     )
-    loader = UnstructuredFileLoader(file_path)
+    loader = UnstructuredLoader(file_path)
     return loader.load_and_split(text_splitter=splitter)
 
 
