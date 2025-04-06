@@ -3,7 +3,6 @@ import math
 import subprocess
 from pathlib import Path
 
-import openai
 import streamlit as st
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
@@ -13,6 +12,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from openai import OpenAI
 from pydub import AudioSegment
 
 from src.utils import load_file
@@ -45,7 +45,7 @@ class ChatModel:
         )
 
 
-@st.cache_data()
+@st.cache_resource()
 def embed_file(file_path):
     """
     Embeds a file using OpenAI embeddings and stores the embeddings in a FAISS vector store.
@@ -69,7 +69,7 @@ def embed_file(file_path):
     return vectorstore.as_retriever()
 
 
-@st.cache_data()
+@st.cache_resource()
 def extract_audio_from_video(video_path):
     """
     Extracts audio from a given video file and saves it as an MP3 file, adjusting the tempo to 1.5x.
@@ -96,7 +96,7 @@ def extract_audio_from_video(video_path):
     subprocess.run(command)
 
 
-@st.cache_data()
+@st.cache_resource()
 def cut_audio_in_chunks(audio_path, chunk_size, chunks_dir):
     """
     Cuts an audio file into chunks of a specified size and exports them to a specified directory.
@@ -122,7 +122,7 @@ def cut_audio_in_chunks(audio_path, chunk_size, chunks_dir):
         chunk.export(f"{chunks_dir}/chunk_{i}.mp3", format="mp3")
 
 
-@st.cache_data()
+@st.cache_resource()
 def transcribe_file(file):
     """
     Transcribes an audio file into text using OpenAI's Whisper model.
@@ -135,17 +135,17 @@ def transcribe_file(file):
     Returns:
         str: The transcribed text from the audio file.
     """
+    client = OpenAI()
     if HAS_TRANSCRIPTION:
         return
     with open(file, "rb") as audio_file:
-        transcript = openai.Audio.transcribe(
-            "whisper-1",
-            audio_file,
+        transcript = client.audio.transcriptions.create(
+            model="whisper-1", file=audio_file
         )
-    return transcript["text"]
+    return transcript.text
 
 
-@st.cache_data()
+@st.cache_resource()
 def transcribe_audio_chunks(chunks_dir, destination):
     """
     Transcribes audio chunks from a specified directory and consolidates them into a single transcript file.
