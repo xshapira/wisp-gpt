@@ -13,7 +13,7 @@ from src.utils import load_file
 def configure_chat_model():
     chat_model = ChatModel()
     chat_model.llm = ChatOpenAI(
-        temperature=0.1,
+        temperature=0.3,
         streaming=True,
         callbacks=[
             ChatCallbackHandler(),
@@ -27,7 +27,7 @@ def configure_chat_model():
     ]
     chat_model.prompt = ChatPromptTemplate.from_messages(messages=messages)
     chat_model.memory_llm = ChatOpenAI(
-        temperature=0.1,
+        temperature=0.3,
     )
     return chat_model
 
