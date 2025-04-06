@@ -1,9 +1,9 @@
 import streamlit as st
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
-from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import CharacterTextSplitter
+from langchain_unstructured import UnstructuredLoader
 
 
 class Embedder:
@@ -28,7 +28,7 @@ class Embedder:
             chunk_size=600,
             chunk_overlap=100,
         )
-        loader = UnstructuredFileLoader(file_path)
+        loader = UnstructuredLoader(file_path)
         docs = loader.load_and_split(text_splitter=splitter)
         embeddings = _embeddings
         cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
