@@ -135,10 +135,10 @@ def transcribe_file(file):
     Returns:
         str: The transcribed text from the audio file.
     """
-    client = OpenAI()
     if HAS_TRANSCRIPTION:
         return
     with open(file, "rb") as audio_file:
+        client = OpenAI()
         transcript = client.audio.transcriptions.create(
             model="whisper-1", file=audio_file
         )
